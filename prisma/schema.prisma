@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Business {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  description      String?
+  operatingHours  Json?
+  location         String?
+  contactEmail     String?
+  contactPhone     String?
+  websiteUrl       String?
+  services         Json?
+  pricing          Json?
+  widgetEnabled    Boolean  @default(true)
+  handoffEmail     String?
+  handoffPhone     String?
+  primaryColor     String?
+  greeting         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  admins          BusinessAdmin[]
+  faqs            Faq[]
+  conversations  Conversation[]
+  auditLogs       AuditLog[]
+}
+
+model BusinessAdmin {
+  id           String   @id @default(cuid())
+  businessId   String
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model Faq {
+  id          String   @id @default(cuid())
+  businessId  String
+  question    String
+  answer      String
+  category    String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, active])
+}
+
+model Conversation {
+  id                 String   @id @default(cuid())
+  businessId         String
+  visitorId          String?
+  visitorEmail       String?
+  visitorName        String?
+  source             String   @default("widget")
+  status             String   @default("open")
+  messages           Json
+  handoffRequested  Boolean  @default(false)
+  handoffReason      String?
+  handoffContactEmail String?
+  handoffContactName String?
+  handoffMessage     String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  business           Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, status])
+  @@index([businessId, createdAt])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  businessId  String?
+  action      String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  business    Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+}

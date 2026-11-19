@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+.env.local
+.env*.local
+*.log
+.turbo
+.vercel
+.DS_Store
+__tests__
+jest.config.js
+
+.vercel
